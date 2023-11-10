@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 
+// Data model for a vehicle record
 class VehicleRecord {
   final String vehicleType;
   final String licensePlate;
@@ -16,6 +17,7 @@ class VehicleRecord {
   });
 }
 
+// The main page widget
 class HomePage extends StatefulWidget {
   const HomePage({Key? key});
 
@@ -23,6 +25,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+// The state for the main page widget
 class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _user;
@@ -31,6 +34,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    // Listen for changes in authentication state
     _auth.authStateChanges().listen((event) {
       setState(() {
         _user = event;
@@ -49,11 +53,14 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
+          // If user is signed in, display user info, vehicle history, and sign-out button
           if (_user != null) ...[
             _userInfo(),
             Expanded(child: _vehicleHistoryList()),
             _signOutButton(),
-          ] else ...[
+          ]
+          // If user is not signed in, display Google sign-in button
+          else ...[
             _googleSignInButton(),
           ],
         ],
@@ -61,6 +68,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Widget for the Google Sign-In button
   Widget _googleSignInButton() {
     return Center(
       child: Column(
@@ -73,23 +81,12 @@ class _HomePageState extends State<HomePage> {
               onPressed: _handleGoogleSignIn,
             ),
           ),
-          if (_user != null)
-            TextButton(
-              onPressed: () async {
-                await _auth.signOut();
-                setState(() {
-                  _user = null; // Clear the user object
-                  vehicleRecords.clear(); // Clear the vehicle history
-                });
-                _handleGoogleSignIn(); // Initiate the sign-in process again
-              },
-              child: Text("Switch Account"),
-            ),
         ],
       ),
     );
   }
 
+  // Widget to display user information
   Widget _userInfo() {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
@@ -98,6 +95,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.max,
         children: [
+          // Display user profile picture
           Container(
             height: 100,
             width: 100,
@@ -107,6 +105,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          // Display user email and display name
           Text(_user!.email!),
           Text(_user!.displayName ?? ""),
         ],
@@ -114,21 +113,25 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Widget for the Sign Out button
   Widget _signOutButton() {
     return Center(
       child: MaterialButton(
         color: Colors.red,
         child: const Text("Sign Out"),
         onPressed: () async {
+          // Sign out the user and clear user and vehicle history
           await _auth.signOut();
           setState(() {
             _user = null; // Clear the user object
+            vehicleRecords.clear(); // Clear the vehicle history
           });
         },
       ),
     );
   }
 
+  // Widget to display the list of vehicle history
   Widget _vehicleHistoryList() {
     if (vehicleRecords.isEmpty) {
       // Display a message when there are no vehicle records.
@@ -137,6 +140,7 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
+    // Display the list of vehicle records using a ListView
     return ListView.builder(
       itemCount: vehicleRecords.length,
       itemBuilder: (context, index) {
@@ -153,6 +157,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Function to handle Google Sign-In
   void _handleGoogleSignIn() {
     try {
       GoogleAuthProvider _googleAuthProvider = GoogleAuthProvider();
